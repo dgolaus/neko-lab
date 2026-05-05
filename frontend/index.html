@@ -287,9 +287,21 @@
     document.addEventListener('mouseleave', () => cursor.style.opacity = '0');
     document.addEventListener('mouseenter', () => cursor.style.opacity = '1');
 
-    document.getElementById('ff').href = '//firefox.' + location.host;
-    document.getElementById('ch').href = '//chrome.'  + location.host;
-    document.getElementById('host').textContent = location.host;
+    const isDemo = location.hostname.includes('github.io') || location.hostname === 'localhost';
+    const ff = document.getElementById('ff');
+    const ch = document.getElementById('ch');
+    const host = document.getElementById('host');
+
+    if (isDemo) {
+      host.textContent = 'your-lab.duckdns.org';
+      document.querySelector('.status').textContent = 'demo';
+      ff.href = 'https://github.com/dgolaus/neko-lab';
+      ch.href = 'https://github.com/dgolaus/neko-lab';
+    } else {
+      host.textContent = location.host;
+      ff.href = '//firefox.' + location.host;
+      ch.href = '//chrome.'  + location.host;
+    }
   </script>
 
 </body>

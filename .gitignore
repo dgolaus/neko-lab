@@ -34,6 +34,9 @@ desktop.ini
 *.swo
 *~
 
+# claude code workspace
+.claude/
+
 # logs
 *.log
 logs/

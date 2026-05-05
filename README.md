@@ -4,6 +4,10 @@
 
 sandbox de navegação isolado, auto-hospedado em vps.
 
+<img src="screenshot.png" alt="neko lab launcher preview" width="720" />
+
+[**ver demo →**](https://dgolaus.github.io/neko-lab/)
+
 </div>
 
 ---
