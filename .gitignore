@@ -1,0 +1,43 @@
+# environment
+.env
+.env.local
+.env.*.local
+.env.backup
+*.env.bak
+
+# tls / acme storage
+acme/
+*.pem
+*.key
+*.crt
+
+# browser profiles (per-deployment user data)
+profiles/
+
+# traefik basic auth credentials
+traefik/users
+traefik/users.bak
+
+# docker
+docker-compose.override.yaml
+docker-compose.override.yml
+
+# os junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# logs
+*.log
+logs/
+
+# temp
+*.tmp
+*.bak

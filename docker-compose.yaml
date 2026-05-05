@@ -1,0 +1,94 @@
+services:
+  traefik:
+    image: traefik:v2.11
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/acme/acme.json
+      - --certificatesresolvers.le.acme.tlschallenge=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./acme:/acme
+    networks:
+      - neko-net
+
+  frontend:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.frontend.entrypoints=websecure
+      - traefik.http.routers.frontend.tls.certresolver=le
+      - traefik.http.services.frontend.loadbalancer.server.port=80
+
+  neko-firefox:
+    image: ghcr.io/m1k1o/neko/firefox:latest
+    restart: unless-stopped
+    shm_size: "2gb"
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NEKO_DESKTOP_SCREEN: "1920x1080@30"
+      NEKO_MEMBER_PROVIDER: multiuser
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: ${NEKO_USER_PASSWORD}
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: ${NEKO_ADMIN_PASSWORD}
+      NEKO_WEBRTC_EPR: "52100-52200"
+      NEKO_WEBRTC_NAT1TO1: ${PUBLIC_IP}
+      NEKO_WEBRTC_ICELITE: "true"
+    volumes:
+      - ./profiles/firefox:/home/neko
+    ports:
+      - "52100-52200:52100-52200/udp"
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.firefox.rule=Host(`firefox.${DOMAIN}`)
+      - traefik.http.routers.firefox.entrypoints=websecure
+      - traefik.http.routers.firefox.tls.certresolver=le
+      - traefik.http.services.firefox.loadbalancer.server.port=8080
+
+  neko-chrome:
+    image: ghcr.io/m1k1o/neko/chromium:latest
+    restart: unless-stopped
+    shm_size: "2gb"
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NEKO_DESKTOP_SCREEN: "1920x1080@30"
+      NEKO_MEMBER_PROVIDER: multiuser
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: ${NEKO_USER_PASSWORD}
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: ${NEKO_ADMIN_PASSWORD}
+      NEKO_WEBRTC_EPR: "52300-52400"
+      NEKO_WEBRTC_NAT1TO1: ${PUBLIC_IP}
+      NEKO_WEBRTC_ICELITE: "true"
+    volumes:
+      - ./profiles/chrome:/home/neko
+    ports:
+      - "52300-52400:52300-52400/udp"
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.chrome.rule=Host(`chrome.${DOMAIN}`)
+      - traefik.http.routers.chrome.entrypoints=websecure
+      - traefik.http.routers.chrome.tls.certresolver=le
+      - traefik.http.services.chrome.loadbalancer.server.port=8080
+
+networks:
+  neko-net:
+    name: neko-net
